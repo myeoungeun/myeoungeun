@@ -1,4 +1,4 @@
-### Hi there 👋
+### 인생 로그아웃 👋
 
 <!--
 **myeoungeun/myeoungeun** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
