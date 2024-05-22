@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>연도/월별 낙상 빈도수 확인</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+            color: #444;
+        }
+        fieldset {
+        border: 2px solid #ccc;
+        padding: 20px;
+        margin: 20px auto; /* 중앙 정렬을 위한 변경 */
+        border-radius: 10px;
+        background-color: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        max-width: 800px; /* 캔버스와 동일한 최대 너비 설정 */
+        width: 100%; /* 필드셋의 가로 크기를 100%로 설정 */
+       }
+        legend {
+            padding: 0 10px;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        form > div {
+            margin-bottom: 15px;
+            width: 100%;
+        }
+        form label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        form input, form select, form button {
+            padding: 10px;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        form button {
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+            border: none;
+        }
+        form button:hover {
+            background-color: #0056b3;
+        }
+        canvas {
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+            display: block;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <h1>연도/월별 낙상 빈도수 확인</h1>
+    <fieldset>
+        <legend>Search Filters</legend>
+        <form id="filterForm">
+            <div>
+                <label for="year">Year:</label>
+                <select id="year" name="year">
+                    <option value="">Select Year</option>
+                    <script>
+                        const currentYear = new Date().getFullYear();
+                        for (let i = currentYear; i >= currentYear - 10; i--) {
+                            document.write(`<option value='${i}'>${i}</option>`);
+                        }
+                    </script>
+                </select>
+            </div>
+            <div>
+                <label for="month">Month:</label>
+                <select id="month" name="month">
+                    <option value="">Select Month</option>
+                    <script>
+                        for (let i = 1; i <= 12; i++) {
+                            const monthValue = String(i).padStart(2, '0');
+                            document.write(`<option value='${monthValue}'>${monthValue}</option>`);
+                        }
+                    </script>
+                </select>
+            </div>
+            <button type="button" onclick="filterData()">Filter</button>
+        </form>
+    </fieldset>
+
+    <canvas id="myChart"></canvas>
+
+    <script>
+        const sampleData = [
+            { year: 2023, month: '05', room_number: '101', value: 50 },
+            { year: 2023, month: '05', room_number: '102', value: 60 },
+            { year: 2023, month: '06', room_number: '101', value: 70 },
+            { year: 2023, month: '06', room_number: '102', value: 80 }
+        ];
+
+        function filterData() {
+            const form = document.getElementById('filterForm');
+            const year = form.year.value;
+            const month = form.month.value;
+
+            const filteredData = sampleData.filter(item => {
+                return (!year || item.year == year) &&
+                       (!month || item.month === month);
+            });
+
+            renderChart(filteredData);
+        }
+
+        function renderChart(data) {
+            const labels = data.map(item => `${item.year}-${item.month}`);
+            const values = data.map(item => item.value);
+
+            const ctx = document.getElementById('myChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Room Data',
+                        data: values,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1,
+                        fill: false
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // 초기 데이터 렌더링
+        renderChart(sampleData);
+    </script>
+</body>
+</html>
