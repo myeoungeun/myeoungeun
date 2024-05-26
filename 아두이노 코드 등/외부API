@@ -1,0 +1,40 @@
+import cv2
+from roboflowoak import RoboflowOak
+import time
+
+if __name__ == '__main__':
+    # 외부 카메라 모듈에 대한 VideoCapture 객체 생성
+    cap = cv2.VideoCapture(0)  # 0은 기본 카메라를 의미합니다. 다른 카메라를 사용하려면 해당 디바이스 번호를 입력하세요.
+
+    # RoboflowOak 객체 생성
+    rf = RoboflowOak(model="fall-detection-ca3o8", confidence=0.05, overlap=0.5,
+                     version="4", api_key="PmHzKiIYMo3X8a2HbcHs", rgb=True,
+                     depth=True, device=None, blocking=True)
+
+    # 무한 루프
+    while True:
+        # 프레임 읽기
+        ret, frame = cap.read()
+
+        # 프레임이 정상적으로 읽혔는지 확인
+        if not ret:
+            print("카메라에서 프레임을 읽을 수 없습니다.")
+            break
+
+        # 추론 실행
+        result, frame, raw_frame, depth = rf.detect(frame, visualize=True)
+
+        # 추론 결과 출력
+        predictions = result["predictions"]
+        print("PREDICTIONS:", [p.json() for p in predictions])
+
+        # 프레임 표시
+        cv2.imshow('frame', frame)
+
+        # 'q' 키를 누르면 종료합니다.
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    # 종료 시 카메라 및 윈도우 해제
+    cap.release()
+    cv2.destroyAllWindows()
