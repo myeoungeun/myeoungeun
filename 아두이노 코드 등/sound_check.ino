@@ -11,7 +11,7 @@ void loop() {
   Serial.print("Sound Value: ");
   Serial.println(soundValue); // 소리 센서 값을 시리얼 모니터에 출력
 
-  if (soundValue > 33) { // 임계치 값 설정 (조절 필요)
+  if (soundValue > 32) { // 임계치 값 설정 (조절 필요)
     Serial.println("on"); // 소리가 감지되면 "on"을 시리얼 모니터에 출력
     digitalWrite(ledPin, HIGH); // LED 켜기
     delay(1000); // LED를 1초 동안 켜둠
