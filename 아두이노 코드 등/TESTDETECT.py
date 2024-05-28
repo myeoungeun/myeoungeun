@@ -7,7 +7,7 @@ from utils.torch_utils import select_device
 import time
 import subprocess
 
-def run_webcam(weights='best.pt', source=0, imgsz=640, conf_thres=0.25, iou_thres=0.45, device='', view_img=True, run_time=10):
+def run_webcam(weights='best.pt', source=0, imgsz=500, conf_thres=0.25, iou_thres=0.45, device='', view_img=True, run_time=10):
     device = select_device(device)
     model = DetectMultiBackend(weights, device=device)
     imgsz = [imgsz, imgsz] if isinstance(imgsz, int) else imgsz
