@@ -1,26 +1,27 @@
 import argparse
 import cv2
 import torch
+import time
 from models.common import DetectMultiBackend
 from utils.general import non_max_suppression, xyxy2xywh
 from utils.torch_utils import select_device
-import time
-import subprocess
 
-def run_webcam(weights='best.pt', source=0, imgsz=500, conf_thres=0.25, iou_thres=0.45, device='', view_img=True, run_time=10):
+def run_webcam(weights='best.pt', source=0, imgsz=640, conf_thres=0.25, iou_thres=0.45, device='', view_img=True, run_duration=20):
     device = select_device(device)
     model = DetectMultiBackend(weights, device=device)
     imgsz = [imgsz, imgsz] if isinstance(imgsz, int) else imgsz
     cap = cv2.VideoCapture(int(source) if source.isnumeric() else source)
 
-    start_time = time.time()
-    person_detected = False
-    person_start_time = None
+    start_time = time.time()  # Record start time
 
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
             break
+
+        # Check if the run duration has exceeded 10 seconds
+        if time.time() - start_time > run_duration:
+            break  # Stop the loop if run duration exceeded
 
         img = torch.from_numpy(frame).to(device)
         img = img.half() if model.fp16 else img.float()  # uint8 to fp16/32
@@ -38,23 +39,9 @@ def run_webcam(weights='best.pt', source=0, imgsz=500, conf_thres=0.25, iou_thre
                 cv2.rectangle(frame, (int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3])), (0, 255, 0), 2)
                 cv2.putText(frame, label, (int(xyxy[0]), int(xyxy[1]) - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-                # 객체가 사람이고, 인식 지속 시간이 5초 이상인 경우
-                if model.names[int(cls)] == 'person':
-                    if not person_detected:
-                        person_detected = True
-                        person_start_time = time.time()
-                    else:
-                        if time.time() - person_start_time >= 3:
-                            # db.py 실행
-                            subprocess.run(["python", "db.py"])
-                            print("사람이 3초 이상 인식되었습니다.")
-        else:
-            person_detected = False
-            person_start_time = None
-
         if view_img:
             cv2.imshow('YOLOv5', frame)
-            if cv2.waitKey(1) & 0xFF == ord('q') or time.time() - start_time > run_time:
+            if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
 
     cap.release()
@@ -69,13 +56,13 @@ def parse_opt():
     parser.add_argument('--iou-thres', type=float, default=0.45, help='NMS IoU threshold')
     parser.add_argument('--device', default='', help='cuda device, i.e. 0 or cpu')
     parser.add_argument('--view-img', action='store_true', help='display results')
-    parser.add_argument('--run-time', type=int, default=10, help='run time in seconds')
+    parser.add_argument('--run-duration', type=int, default=20, help='duration to run webcam (seconds)')
     opt = parser.parse_args()
     return opt
 
 def main(opt):
     run_webcam(weights=opt.weights, source=opt.source, imgsz=opt.imgsz, conf_thres=opt.conf_thres,
-               iou_thres=opt.iou_thres, device=opt.device, view_img=opt.view_img, run_time=opt.run_time)
+               iou_thres=opt.iou_thres, device=opt.device, view_img=opt.view_img, run_duration=opt.run_duration)
 
 if __name__ == '__main__':
     opt = parse_opt()
